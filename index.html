@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern Drawing App</title>
+    <style>
+        :root {
+            --primary-color: #6C63FF;
+            --secondary-color: #4CAF50;
+            --background-color: #1E1E1E;
+            --surface-color: #2D2D2D;
+            --text-color: #FFFFFF;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: var(--background-color);
+            color: var(--text-color);
+        }
+        
+        .container {
+            background-color: var(--surface-color);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            max-width: 900px;
+            width: 100%;
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: var(--primary-color);
+            font-weight: 300;
+            font-size: 2.5em;
+        }
+        
+        #canvas {
+            border: 2px solid var(--primary-color);
+            border-radius: 10px;
+            background-color: #fff;
+            max-width: 100%;
+            height: auto;
+            cursor: crosshair;
+            transition: box-shadow 0.3s ease;
+        }
+        
+        #canvas:hover {
+            box-shadow: 0 0 20px rgba(108, 99, 255, 0.5);
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        input[type="color"] {
+            -webkit-appearance: none;
+            width: 50px;
+            height: 50px;
+            border: none;
+            border-radius: 50%;
+            background: none;
+            cursor: pointer;
+        }
+        
+        input[type="color"]::-webkit-color-swatch-wrapper {
+            padding: 0;
+        }
+        
+        input[type="color"]::-webkit-color-swatch {
+            border: none;
+            border-radius: 50%;
+            box-shadow: 0 0 0 2px var(--text-color);
+        }
+        
+        button {
+            background-color: var(--primary-color);
+            color: var(--text-color);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        button:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.4);
+        }
+        
+        #eraser {
+            background-color: #FF5252;
+        }
+        
+        #eraser:hover {
+            background-color: #FF8A80;
+        }
+        
+        #clear {
+            background-color: #FFC107;
+        }
+        
+        #clear:hover {
+            background-color: #FFD54F;
+        }
+        
+        #download {
+            background-color: #2196F3;
+        }
+        
+        #download:hover {
+            background-color: #64B5F6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Modern Drawing App</h1>
+        <canvas id="canvas" width="800" height="600"></canvas>
+        <div class="controls">
+            <div class="control-group">
+                <input type="color" id="colorPicker" value="#6C63FF">
+                <button id="eraser">Eraser</button>
+            </div>
+            <div class="control-group">
+                <button id="clear">Clear</button>
+                <button id="download">Download</button>
+            </div>
+        </div>
+    </div>
+
+    
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const colorPicker = document.getElementById('colorPicker');
+        const eraserBtn = document.getElementById('eraser');
+        const clearBtn = document.getElementById('clear');
+        const downloadBtn = document.getElementById('download');
+
+        let isDrawing = false;
+        let isErasing = false;
+
+     
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        function startPosition(e) {
+            isDrawing = true;
+            draw(e);
+        }
+
+        function endPosition() {
+            isDrawing = false;
+            ctx.beginPath();
+        }
+
+        function draw(e) {
+            if (!isDrawing) return;
+
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+
+            const x = (e.clientX - rect.left) * scaleX;
+            const y = (e.clientY - rect.top) * scaleY;
+
+            ctx.lineWidth = isErasing ? 20 : 5;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+
+            if (isErasing) {
+                ctx.globalCompositeOperation = 'source-over';
+                ctx.strokeStyle = '#ffffff';
+            } else {
+                ctx.globalCompositeOperation = 'source-over';
+                ctx.strokeStyle = colorPicker.value;
+            }
+
+            ctx.lineTo(x, y);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+        }
+
+
+        canvas.addEventListener('mousedown', startPosition);
+        canvas.addEventListener('mouseup', endPosition);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseout', endPosition);
+
+        eraserBtn.addEventListener('click', () => {
+            isErasing = !isErasing;
+            eraserBtn.textContent = isErasing ? 'Pen' : 'Eraser';
+            eraserBtn.style.backgroundColor = isErasing ? '#4CAF50' : '#FF5252';
+        });
+
+        clearBtn.addEventListener('click', () => {
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        });
+
+        downloadBtn.addEventListener('click', () => {
+            const image = canvas.toDataURL('image/png');
+            const link = document.createElement('a');
+            link.href = image;
+            link.download = 'modern-drawing.png';
+            link.click();
+        });
+
+    
+        function resizeCanvas() {
+            const container = canvas.parentElement;
+            const containerWidth = container.clientWidth - 60; 
+            const scale = containerWidth / canvas.width;
+            canvas.style.width = `${containerWidth}px`;
+            canvas.style.height = `${canvas.height * scale}px`;
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+    </script>
+</body>
+</html>
